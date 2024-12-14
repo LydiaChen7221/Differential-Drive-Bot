@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import lib.CommandRobot;
 import lib.FaultLogger;
@@ -75,7 +76,7 @@ public class Robot extends CommandRobot implements Logged {
 
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
-      drive.setDefaultCommand(drive.drive(driver.getLeftY(), driver.getRightY()));
+      drive.setDefaultCommand(new RunCommand(() -> drive.drive(driver.getLeftY(), driver.getRightY()), drive));
   }
 
   /**
@@ -86,17 +87,9 @@ public class Robot extends CommandRobot implements Logged {
    * @return The command to rumble both controllers.
    */
   public Command rumble(RumbleType rumbleType, double strength) {
-    return Commands.runOnce(
-            () -> {
-              driver.getHID().setRumble(rumbleType, strength);
-              operator.getHID().setRumble(rumbleType, strength);
-            })
+    return Commands.runOnce(() -> driver.getHID().setRumble(rumbleType, strength))
         .andThen(Commands.waitSeconds(0.3))
-        .finallyDo(
-            () -> {
-              driver.getHID().setRumble(rumbleType, 0);
-              operator.getHID().setRumble(rumbleType, 0);
-            });
+        .finallyDo(() -> driver.getHID().setRumble(rumbleType, 0));
   }
 
   public Command drive(DoubleSupplier vLeft, DoubleSupplier vRight) {
