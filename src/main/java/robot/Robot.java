@@ -3,6 +3,8 @@ package robot;
 import static edu.wpi.first.units.Units.Seconds;
 import static robot.Constants.PERIOD;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -19,6 +21,7 @@ import monologue.Logged;
 import monologue.Monologue;
 import org.littletonrobotics.urcl.URCL;
 import robot.Ports.OI;
+import robot.drive.Drive;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -34,6 +37,7 @@ public class Robot extends CommandRobot implements Logged {
   private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
+  Drive drive = new Drive();
 
   // COMMANDS
 
@@ -70,7 +74,9 @@ public class Robot extends CommandRobot implements Logged {
   }
 
   /** Configures trigger -> command bindings. */
-  private void configureBindings() {}
+  private void configureBindings() {
+      drive.setDefaultCommand(drive.drive(driver.getLeftY(), driver.getRightY()));
+  }
 
   /**
    * Command factory to make both controllers rumble.
@@ -91,6 +97,10 @@ public class Robot extends CommandRobot implements Logged {
               driver.getHID().setRumble(rumbleType, 0);
               operator.getHID().setRumble(rumbleType, 0);
             });
+  }
+
+  public Command drive(DoubleSupplier vLeft, DoubleSupplier vRight) {
+    return Commands.run(() -> drive.drive(vLeft.getAsDouble(), vRight.getAsDouble()));
   }
 
   @Override
